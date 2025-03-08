@@ -5,6 +5,7 @@ ktor = "3.0.3"
 logback = "1.5.16"
 zxing = "3.5.0"
 kotlinx-html = "0.10.1"
+kotlinx-serialization = "1.6.2"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -16,6 +17,7 @@ ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor"
 ktor-server-websockets = { module = "io.ktor:ktor-server-websockets", version.ref = "ktor"}
 ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor"}
 ktor-kotlin-serialization = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor"}
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 zxing-qr-code = { module = "com.google.zxing:core", version.ref = "zxing"}
 zxing-qr-code-jvm = { module = "com.google.zxing:javase", version.ref = "zxing"}
 kotlinx-html = { module = "org.jetbrains.kotlinx:kotlinx-html-jvm", version.ref = "kotlinx-html" }
@@ -23,3 +25,4 @@ kotlinx-html = { module = "org.jetbrains.kotlinx:kotlinx-html-jvm", version.ref 
 [plugins]
 kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
+kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
