@@ -144,13 +144,20 @@ fun generatePollingJavaScript(): String {
 
     // Casino-like animation for shuffling user numbers
     function startNumberAnimation(users) {
-        // Get all user IDs
-        userIds = Object.keys(users);
+        // Get all user IDs, excluding kicked-out users
+        userIds = [];
+        for (var key in users) {
+            if (!users[key].kickedOut) {
+                userIds.push(key);
+            }
+        }
 
         if (userIds.length === 0) {
             console.log('No users to animate');
             return;
         }
+
+        console.log('Animating with user IDs:', userIds);
 
         // Stop any existing animation
         if (animationInterval) {
