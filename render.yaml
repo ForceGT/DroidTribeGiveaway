@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: giveaway-app
+    env: docker
+    buildCommand: docker build -t giveaway-app .
+    startCommand: docker run -p $PORT:8080 -e PORT=$PORT -e HOST=$RENDER_EXTERNAL_HOSTNAME giveaway-app
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: HOST
+        fromService:
+          type: web
+          name: giveaway-app
+          property: host
+    autoDeploy: true
