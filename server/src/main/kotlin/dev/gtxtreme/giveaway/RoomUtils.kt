@@ -41,8 +41,8 @@ data class WinnerResponse(
 )
 
 object RoomUtils {
-    // Store registered users
-    private var users = mutableMapOf<Int, User>()
+    // Store registered users using a thread-safe map
+    private var users = ConcurrentHashMap<Int, User>()
 
     // Store the current winner, if any
     private var winner: Int? = null
@@ -65,6 +65,9 @@ object RoomUtils {
         println("[$timestamp] $message")
     }
 
+    // Counter for generating unique user IDs
+    private var userIdCounter = 0
+
     suspend fun addUserToRoom(name: String): Int? {
         log("Adding user to room: $name")
 
@@ -74,7 +77,12 @@ object RoomUtils {
             return null
         }
 
-        val userId = users.size + 1  // Assign a new unique number (starting from 1)
+        // Synchronize the ID assignment to ensure uniqueness
+        val userId: Int
+        synchronized(this) {
+            userIdCounter++
+            userId = userIdCounter
+        }
 
         // Generate a unique identifier for this user
         val uniqueId = UUID.randomUUID().toString().substring(0, 8)
