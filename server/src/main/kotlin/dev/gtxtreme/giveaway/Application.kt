@@ -17,26 +17,45 @@ import kotlinx.coroutines.*
 
 fun main(args: Array<String>) {
 
-    // For cloud deployment: use HOST environment variable if available
+    // Check for Railway-specific environment variables first
+    val railwayUrl = System.getenv("RAILWAY_STATIC_URL") ?: System.getenv("RAILWAY_PUBLIC_DOMAIN")
+
+    // For other cloud deployments: use HOST environment variable if available
     // Otherwise, get the local IP address for the QR code URL
     val deployedHost = System.getenv("HOST")
     val localIpAddress = InetAddress.getLocalHost().hostAddress
 
+    // Determine if we're running on Railway
+    val isRailway = railwayUrl != null
+
     // Priority order for host:
     // 1. Command line argument (if provided)
-    // 2. HOST environment variable (for cloud deployment)
-    // 3. Local IP address (for local development)
+    // 2. Railway URL (for Railway deployment)
+    // 3. HOST environment variable (for other cloud deployments)
+    // 4. Local IP address (for local development)
     val qrCodeHost = when {
         args.isNotEmpty() -> args[0]
+        isRailway -> railwayUrl
         deployedHost != null -> deployedHost
         else -> localIpAddress
     }
 
     // For cloud deployment, we might not need to show the port in the URL
-    val portSuffix = if (System.getenv("PORT") != null && System.getenv("HOST") != null) "" else ":$SERVER_PORT"
+    val isCloudDeployed = isRailway || (System.getenv("PORT") != null && System.getenv("HOST") != null)
+    val portSuffix = if (isCloudDeployed) "" else ":$SERVER_PORT"
 
-    println("Server will be accessible at: http://$qrCodeHost$portSuffix")
-    println("QR code will use URL: http://$qrCodeHost$portSuffix/enterRoom")
+    // Use HTTPS for Railway, HTTP for everything else
+    val protocol = if (isRailway) "https://" else "http://"
+
+    // If we're on Railway and the URL already includes the protocol, don't add it again
+    val fullHost = if (isRailway && qrCodeHost!!.startsWith("http")) {
+        qrCodeHost
+    } else {
+        "$protocol$qrCodeHost"
+    }
+
+    println("Server will be accessible at: $fullHost$portSuffix")
+    println("QR code will use URL: $fullHost$portSuffix/enterRoom")
 
     // Use "0.0.0.0" to bind to all available network interfaces
     // This makes the server accessible from other machines
@@ -65,13 +84,13 @@ fun main(args: Array<String>) {
             }
 
             get("/") {
-                val url = "http://$qrCodeHost$portSuffix/enterRoom"
+                val url = "$fullHost$portSuffix/enterRoom"
                 val qrCodeImage = QrCodeUtils.generateQrCode(url)
                 val qrCodeBase64 = java.util.Base64.getEncoder().encodeToString(qrCodeImage)
 
                 // Use the kotlinx.html template
                 call.respondText(
-                    renderHomePage(qrCodeHost + portSuffix, qrCodeBase64),
+                    renderHomePage(fullHost.removePrefix("http://").removePrefix("https://") + portSuffix, qrCodeBase64),
                     ContentType.Text.Html
                 )
             }
